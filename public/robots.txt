@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://wndff.de/sitemap.xml

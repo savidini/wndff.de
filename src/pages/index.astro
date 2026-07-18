@@ -1,0 +1,41 @@
+---
+import ProfilePanel from '../components/ProfilePanel.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { profiles } from '../data/profiles';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import '../styles/home.css';
+
+const title = 'wndff.de';
+const description =
+  'David Wendorff works in industrial robotics and assembly automation. Eva Wendorff works in specialty coffee operations and leadership.';
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': profiles.map((profile) => ({
+    '@type': 'Person',
+    name: profile.name,
+    url: `https://wndff.de/#${profile.id}`,
+    sameAs: profile.links.map((link) => link.url),
+    knowsAbout: profile.field,
+  })),
+};
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  path="/"
+  structuredData={structuredData}
+>
+  <SiteHeader home />
+  <main class="split static-home">
+    <h1 class="visually-hidden">wndff.de — David and Eva Wendorff</h1>
+    <a class="legal-link legal-link--home-corner" href="/legal/">
+      Impressum &amp; Datenschutz
+    </a>
+    {
+      profiles.map((profile, index) => (
+        <ProfilePanel profile={profile} position={index} />
+      ))
+    }
+  </main>
+</BaseLayout>

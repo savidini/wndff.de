@@ -1,0 +1,140 @@
+---
+import ObfuscatedEmail from '../../components/ObfuscatedEmail.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/legal.css';
+---
+
+<BaseLayout
+  title="Impressum & Datenschutz — wndff.de"
+  description="Impressum und Datenschutzhinweise für wndff.de."
+  path="/legal/"
+  themeColor="#07111f"
+>
+  <div class="legal-page">
+    <SiteHeader showLegal={false} />
+    <main class="legal-layout">
+      <section
+        class="legal-panel legal-panel--provider"
+        aria-labelledby="legal-heading"
+      >
+        <div class="legal-panel__inner">
+          <p class="legal-eyebrow">wndff.de / Anbieter</p>
+          <h1 id="legal-heading">
+            Impressum<span class="visually-hidden"> &amp; Datenschutz</span>
+          </h1>
+          <p class="lead">Anbieterkennzeichnung für wndff.de.</p>
+
+          <div class="legal-content legal-content--provider">
+            <section aria-labelledby="anbieterkennzeichnung">
+              <h2 id="anbieterkennzeichnung">Anbieterkennzeichnung</h2>
+              <p>Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG)</p>
+              <address>
+                David Wendorff<br />
+                Schaeferwall 11<br />
+                38640 Goslar<br />
+                Deutschland
+              </address>
+              <p>E-Mail: <ObfuscatedEmail /></p>
+            </section>
+
+            <section aria-labelledby="verantwortlicher">
+              <h2 id="verantwortlicher">Verantwortlicher</h2>
+              <p>
+                Verantwortlicher im Sinne der Datenschutz-Grundverordnung
+                (DSGVO) ist David Wendorff; die Kontaktdaten stehen im
+                Impressum.
+              </p>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="legal-panel legal-panel--privacy"
+        aria-labelledby="privacy-heading"
+      >
+        <div class="legal-panel__inner">
+          <p class="legal-eyebrow">wndff.de / Daten</p>
+          <h2 class="legal-panel__title" id="privacy-heading">Datenschutz</h2>
+          <p class="lead">
+            Informationen zur Verarbeitung personenbezogener Daten auf wndff.de.
+          </p>
+
+          <div class="legal-content legal-content--privacy">
+            <section aria-labelledby="hosting">
+              <h3 id="hosting">Hosting über GitHub Pages</h3>
+              <p>
+                Diese Website wird als statische Website über GitHub Pages
+                bereitgestellt. Anbieter ist GitHub, Inc., 88 Colin P. Kelly Jr.
+                Street, San Francisco, CA 94107, USA.
+              </p>
+              <p>
+                Beim Aufruf der Website verarbeitet GitHub technisch
+                erforderliche Verbindungsdaten. GitHub gibt insbesondere an, die
+                IP-Adressen von Besuchern einer GitHub-Pages-Website zu
+                Sicherheitszwecken zu protokollieren. Diese Verarbeitung liegt
+                technisch im Verantwortungsbereich von GitHub. Die
+                Bereitstellung dieser Website stützt sich auf Art. 6 Abs. 1 lit.
+                f DSGVO; berechtigtes Interesse ist ein sicherer und
+                zuverlässiger Webauftritt.
+              </p>
+              <p>
+                Weitere Informationen finden Sie in der{' '}
+                <a
+                  href="https://docs.github.com/de/pages/getting-started-with-github-pages/what-is-github-pages#datensammlung"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                  >Dokumentation zur Datensammlung bei GitHub Pages</a
+                >
+                {' '}und in der{' '}
+                <a
+                  href="https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement"
+                  rel="noopener noreferrer"
+                  target="_blank">Datenschutzerklärung von GitHub</a
+                >.
+              </p>
+            </section>
+
+            <section aria-labelledby="lokale-datenverarbeitung">
+              <h3 id="lokale-datenverarbeitung">Keine eigenen Tracker</h3>
+              <p>
+                Auf dieser Website werden keine Analyse- oder Trackingdienste,
+                keine eingebetteten Inhalte und keine eigenen Cookies
+                eingesetzt. Die Schriften und Bilder werden lokal von derselben
+                Website ausgeliefert.
+              </p>
+            </section>
+
+            <section aria-labelledby="externe-links">
+              <h3 id="externe-links">Externe Links zu LinkedIn</h3>
+              <p>
+                Diese Website enthält lediglich ausgehende Links zu Profilseiten
+                auf LinkedIn. Erst wenn Sie einen solchen Link aktiv aufrufen,
+                stellt Ihr Browser eine Verbindung zu LinkedIn her. Für die
+                dortige Datenverarbeitung ist der jeweilige LinkedIn-Anbieter
+                verantwortlich. Es werden keine LinkedIn-Inhalte auf wndff.de
+                eingebettet.
+              </p>
+            </section>
+
+            <section aria-labelledby="rechte">
+              <h3 id="rechte">Ihre Rechte</h3>
+              <p>
+                Nach Maßgabe der gesetzlichen Voraussetzungen haben Sie
+                insbesondere Rechte auf Auskunft, Berichtigung, Löschung,
+                Einschränkung der Verarbeitung, Datenübertragbarkeit und
+                Widerspruch. Außerdem können Sie sich bei einer zuständigen
+                Datenschutzaufsichtsbehörde beschweren.
+              </p>
+              <p>
+                Fragen zum Datenschutz richten Sie bitte an{' '}
+                <ObfuscatedEmail />.
+              </p>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</BaseLayout>

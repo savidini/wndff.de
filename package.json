@@ -1,0 +1,52 @@
+{
+  "name": "wndff.de",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.x",
+    "npm": ">=11"
+  },
+  "scripts": {
+    "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
+    "prebuild": "npm run assets:generate",
+    "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
+    "astro:check": "ASTRO_TELEMETRY_DISABLED=1 astro check",
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "portraits:prepare": "node scripts/prepare-portraits.mjs",
+    "portraits:check": "node scripts/check-portraits.mjs",
+    "assets:generate": "node scripts/generate-static-assets.mjs",
+    "test:e2e": "playwright test",
+    "lighthouse": "node scripts/run-lighthouse.mjs",
+    "verify:code": "npm run astro:check && npm run lint && npm run format:check && npm run build && npm run test:e2e",
+    "verify": "npm run portraits:check && npm run verify:code"
+  },
+  "dependencies": {
+    "@fontsource-variable/fraunces": "5.2.9",
+    "@fontsource-variable/manrope": "5.2.8",
+    "@fontsource/press-start-2p": "5.2.7",
+    "astro": "7.1.1",
+    "sharp": "0.35.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.9",
+    "@axe-core/playwright": "4.12.1",
+    "@eslint/js": "10.0.1",
+    "@lhci/cli": "0.15.1",
+    "@playwright/test": "1.61.1",
+    "eslint": "10.7.0",
+    "eslint-plugin-astro": "3.0.1",
+    "lightningcss": "1.32.0",
+    "playwright": "1.61.1",
+    "prettier": "3.9.5",
+    "prettier-plugin-astro": "0.14.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.64.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true
+  }
+}

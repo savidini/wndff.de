@@ -1,0 +1,106 @@
+---
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import type { Profile } from '../data/profiles';
+import { portraitSrcset } from '../data/profiles';
+
+type Props = {
+  profile: Profile;
+  position: number;
+};
+
+const { profile, position } = Astro.props;
+const sourceAt = (template: string, width: number) =>
+  template.replace('{width}', String(width));
+const hasPortrait = existsSync(
+  join(process.cwd(), 'public', sourceAt(profile.portrait.sources.jpeg, 960)),
+);
+const initials = profile.name
+  .split(' ')
+  .map((part) => part[0])
+  .join('');
+const panelStyle = [
+  `--panel-bg:${profile.theme.background}`,
+  `--panel-bg-deep:${profile.theme.backgroundDeep}`,
+  `--panel-fg:${profile.theme.foreground}`,
+  `--panel-muted:${profile.theme.muted}`,
+  `--panel-accent:${profile.theme.accent}`,
+  `--panel-accent-soft:${profile.theme.accentSoft}`,
+  `--focal-x:${profile.portrait.focalPoint.x}`,
+  `--focal-y:${profile.portrait.focalPoint.y}`,
+].join(';');
+---
+
+<section
+  id={profile.id}
+  class:list={['profile', `profile--${profile.id}`]}
+  style={panelStyle}
+  data-profile={profile.id}
+  data-position={position}
+>
+  <div class="profile__composition">
+    <div
+      class:list={['portrait', { 'portrait--pending': !hasPortrait }]}
+      data-portrait-state={hasPortrait ? 'ready' : 'missing'}
+    >
+      <div class="portrait__image">
+        {
+          hasPortrait ? (
+            <picture>
+              <source
+                type="image/avif"
+                srcset={portraitSrcset(profile.portrait.sources.avif)}
+                sizes="(min-width: 768px) 19rem, 10rem"
+              />
+              <source
+                type="image/webp"
+                srcset={portraitSrcset(profile.portrait.sources.webp)}
+                sizes="(min-width: 768px) 19rem, 10rem"
+              />
+              <img
+                src={sourceAt(profile.portrait.sources.jpeg, 960)}
+                srcset={portraitSrcset(profile.portrait.sources.jpeg)}
+                sizes="(min-width: 768px) 19rem, 10rem"
+                width="960"
+                height="960"
+                alt={profile.portrait.alt}
+                loading="eager"
+                fetchpriority="high"
+                decoding="async"
+              />
+            </picture>
+          ) : (
+            <span class="portrait__fallback" aria-hidden="true">
+              <span class="portrait__monogram">{initials}</span>
+            </span>
+          )
+        }
+      </div>
+    </div>
+
+    <div class="profile__content">
+      <h2>{profile.name}</h2>
+      <p class="profile__field">{profile.field}</p>
+      <nav class="profile__links" aria-label={`${profile.name} links`}>
+        {
+          profile.links.map((link) => (
+            <a
+              class="profile__link"
+              data-icon={link.icon}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${link.label} — ${profile.name} (opens in a new tab)`}
+            >
+              <span class="profile__link-pixel" aria-hidden="true" />
+              <span>{link.label}</span>
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <path d="M4 12L12 4M6 4h6v6" />
+              </svg>
+            </a>
+          ))
+        }
+      </nav>
+    </div>
+  </div>
+</section>

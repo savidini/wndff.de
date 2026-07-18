@@ -1,0 +1,37 @@
+---
+import SiteHeader from '../components/SiteHeader.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+Astro.response.status = 404;
+---
+
+<BaseLayout
+  title="Seite nicht gefunden — wndff.de"
+  description="Die angeforderte Seite wurde nicht gefunden."
+  path="/404.html"
+  themeColor="#f4efe7"
+>
+  <div class="not-found-page">
+    <SiteHeader />
+    <main>
+      <p class="not-found-code">Fehler 404</p>
+      <h1>Diese Seite gibt es nicht.</h1>
+      <p class="lead">Zurück zu David und Eva Wendorff.</p>
+      <a class="back-link" href="/">Zur Startseite</a>
+    </main>
+    <svg
+      class="not-found-orbit"
+      viewBox="0 0 600 600"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle cx="300" cy="300" r="242" stroke="#0b7288" stroke-width="2"
+      ></circle>
+      <circle cx="300" cy="300" r="150" stroke="#a54f2c" stroke-width="2"
+      ></circle>
+      <path d="M44 300H556M300 44V556" stroke="#0b7288" stroke-width="1"></path>
+      <circle cx="300" cy="58" r="12" fill="#39d7f2"></circle>
+      <circle cx="450" cy="300" r="10" fill="#a54f2c"></circle>
+    </svg>
+  </div>
+</BaseLayout>

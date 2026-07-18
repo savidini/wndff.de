@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <clipPath id="left">
+      <path d="M0 0h32v64H0z" />
+    </clipPath>
+    <clipPath id="right">
+      <path d="M32 0h32v64H32z" />
+    </clipPath>
+  </defs>
+  <rect width="64" height="64" rx="12" fill="#07111f" />
+  <path
+    d="M32 0h20c6.627 0 12 5.373 12 12v40c0 6.627-5.373 12-12 12H32Z"
+    fill="#dfc291"
+  />
+  <path
+    d="m12 16 8 32 12-20 12 20 8-32"
+    fill="none"
+    stroke="#5ee3d2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="8"
+    clip-path="url(#left)"
+  />
+  <path
+    d="m12 16 8 32 12-20 12 20 8-32"
+    fill="none"
+    stroke="#713526"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="8"
+    clip-path="url(#right)"
+  />
+</svg>

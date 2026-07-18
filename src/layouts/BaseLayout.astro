@@ -1,0 +1,72 @@
+---
+import '@fontsource-variable/fraunces/wght.css';
+import '@fontsource-variable/manrope/wght.css';
+import '@fontsource/press-start-2p/400.css';
+import '../styles/site.css';
+
+type StructuredData =
+  Record<string, unknown> | readonly Record<string, unknown>[];
+
+type Props = {
+  title: string;
+  description: string;
+  path?: string;
+  themeColor?: string;
+  structuredData?: StructuredData;
+};
+
+const {
+  title,
+  description,
+  path = Astro.url.pathname,
+  themeColor = '#0b1a2c',
+  structuredData,
+} = Astro.props;
+const canonical = new URL(path, Astro.site);
+const socialImage = new URL('/og-card.png', Astro.site);
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content={themeColor} />
+    <meta name="color-scheme" content="dark light" />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml" sizes="any" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="wndff.de" />
+    <meta property="og:locale" content="de_DE" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={socialImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="wndff.de — David and Eva Wendorff" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage} />
+
+    <title>{title}</title>
+    {
+      structuredData && (
+        <script
+          is:inline
+          type="application/ld+json"
+          set:html={JSON.stringify(structuredData).replaceAll('<', '\\u003c')}
+        />
+      )
+    }
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

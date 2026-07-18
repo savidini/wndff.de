@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.astro/
+.cache/
+.DS_Store
+playwright-report/
+test-results/
+.lighthouseci/
+
+# Original portraits are private source material and must never be committed.
+.portrait-source/
+
+# Generated portrait derivatives are intentionally committed.
+!public/portraits/
+!public/portraits/**

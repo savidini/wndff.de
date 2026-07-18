@@ -1,0 +1,29 @@
+---
+type Props = {
+  home?: boolean;
+  showLegal?: boolean;
+};
+
+const { home = false, showLegal = true } = Astro.props;
+---
+
+<header class:list={['site-header', { 'site-header--home': home }]}>
+  {
+    home ? (
+      <span class="wordmark" aria-label="wndff.de home">
+        wndff<span aria-hidden="true">.</span>de
+      </span>
+    ) : (
+      <a class="wordmark" href="/" aria-label="wndff.de home">
+        wndff<span aria-hidden="true">.</span>de
+      </a>
+    )
+  }
+  {
+    !home && showLegal && (
+      <a class="legal-link" href="/legal/">
+        Impressum &amp; Datenschutz
+      </a>
+    )
+  }
+</header>

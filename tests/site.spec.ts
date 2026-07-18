@@ -1,0 +1,286 @@
+import AxeBuilder from '@axe-core/playwright';
+import { expect, test } from '@playwright/test';
+
+const expectedProfiles = [
+  {
+    id: 'david',
+    name: 'David Wendorff',
+    field: 'Industrial Robotics and Assembly Automation',
+    links: [
+      { label: 'LinkedIn', url: 'https://www.linkedin.com/in/wndff/' },
+      { label: 'GitHub', url: 'https://github.com/savidini' },
+    ],
+  },
+  {
+    id: 'eva',
+    name: 'Eva Wendorff',
+    field: 'Specialty Coffee Operations & Leadership',
+    links: [
+      {
+        label: 'LinkedIn',
+        url: 'https://www.linkedin.com/in/evawendorff/',
+      },
+    ],
+  },
+] as const;
+
+test.describe('landing page', () => {
+  test('has equal desktop columns', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+
+    await expect(page).toHaveTitle('wndff.de');
+    await expect(page.locator('link[rel="icon"]')).toHaveAttribute(
+      'href',
+      '/favicon.svg?v=3',
+    );
+
+    const [david, eva] = await Promise.all([
+      page.locator('#david').boundingBox(),
+      page.locator('#eva').boundingBox(),
+    ]);
+    expect(david).not.toBeNull();
+    expect(eva).not.toBeNull();
+    expect(david?.x).toBeCloseTo(0, 0);
+    expect(david?.width).toBeCloseTo(720, 0);
+    expect(eva?.x).toBeCloseTo(720, 0);
+    expect(eva?.width).toBeCloseTo(720, 0);
+    expect(david?.height).toBeCloseTo(900, 0);
+    expect(eva?.height).toBeCloseTo(900, 0);
+  });
+
+  test('uses a static composition without decorative scene animation', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+
+    await expect(page.locator('.pixel-scene, .art')).toHaveCount(0);
+    const animatedElements = await page
+      .locator('.profile *')
+      .evaluateAll(
+        (elements) =>
+          elements.filter(
+            (element) => getComputedStyle(element).animationName !== 'none',
+          ).length,
+      );
+    expect(animatedElements).toBe(0);
+  });
+
+  test('stacks equal mobile sections without horizontal overflow', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+
+    const [david, eva] = await Promise.all([
+      page.locator('#david').boundingBox(),
+      page.locator('#eva').boundingBox(),
+    ]);
+    expect(david).not.toBeNull();
+    expect(eva).not.toBeNull();
+    expect(david?.x).toBeCloseTo(0, 0);
+    expect(eva?.x).toBeCloseTo(0, 0);
+    expect(david?.width).toBeCloseTo(390, 0);
+    expect(eva?.width).toBeCloseTo(390, 0);
+    expect(
+      Math.abs((david?.height ?? 0) - (eva?.height ?? 0)),
+    ).toBeLessThanOrEqual(1);
+    expect(eva?.y).toBeCloseTo((david?.y ?? 0) + (david?.height ?? 0), 0);
+
+    const hasOverflow = await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth >
+        document.documentElement.clientWidth,
+    );
+    expect(hasOverflow).toBe(false);
+  });
+
+  test('shows circular portraits and all intended secure profile links', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    for (const profile of expectedProfiles) {
+      const panel = page.locator(`#${profile.id}`);
+      await expect(
+        panel.getByRole('heading', { name: profile.name }),
+      ).toBeVisible();
+      await expect(
+        panel.getByText(profile.field, { exact: true }),
+      ).toBeVisible();
+
+      const portrait = panel.locator('.portrait__image');
+      const portraitBox = await portrait.boundingBox();
+      expect(portraitBox?.width).toBeCloseTo(portraitBox?.height ?? 0, 0);
+      await expect(portrait).toHaveCSS('border-radius', /50%/);
+
+      const portraitImage = portrait.locator('img');
+      await expect(portraitImage).toHaveAttribute('loading', 'eager');
+      await expect(portraitImage).toHaveAttribute('fetchpriority', 'high');
+
+      for (const expectedLink of profile.links) {
+        const link = panel.getByRole('link', {
+          name: new RegExp(`${expectedLink.label} — ${profile.name}`),
+        });
+        await expect(link).toHaveText(expectedLink.label);
+        await expect(link).toHaveAttribute('href', expectedLink.url);
+        await expect(link).toHaveAttribute('target', '_blank');
+        await expect(link).toHaveAttribute('rel', /noopener/);
+        await expect(link).toHaveAttribute('rel', /noreferrer/);
+      }
+    }
+
+    await expect(page.locator('a[href="https://savidini.de/"]')).toHaveCount(0);
+  });
+
+  test('has semantic headings, visible keyboard focus, and no axe violations', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    await expect(page.locator('h1')).toHaveCount(1);
+    await expect(page.locator('h2')).toHaveCount(2);
+    await page.keyboard.press('Tab');
+    await expect(
+      page.getByRole('link', { name: 'Impressum & Datenschutz' }),
+    ).toBeFocused();
+
+    const focusStyle = await page
+      .getByRole('link', { name: 'Impressum & Datenschutz' })
+      .evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          style: style.outlineStyle,
+          width: Number.parseFloat(style.outlineWidth),
+        };
+      });
+    expect(focusStyle.style).toBe('solid');
+    expect(focusStyle.width).toBeGreaterThanOrEqual(2);
+
+    const results = await new AxeBuilder({ page }).analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test('fully disables motion when reduced motion is requested', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+
+    const movingElements = await page.locator('.profile *').evaluateAll(
+      (elements) =>
+        elements.filter((element) => {
+          const style = getComputedStyle(element);
+          return (
+            style.animationName !== 'none' || style.transitionDuration !== '0s'
+          );
+        }).length,
+    );
+    expect(movingElements).toBe(0);
+  });
+
+  test('makes no third-party request during initial load', async ({ page }) => {
+    const externalHosts = new Set<string>();
+    page.on('request', (request) => {
+      const url = new URL(request.url());
+      if (!['127.0.0.1', 'localhost'].includes(url.hostname))
+        externalHosts.add(url.hostname);
+    });
+
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    expect([...externalHosts]).toEqual([]);
+  });
+});
+
+test.describe('static routes', () => {
+  test('loads the legal page directly', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const response = await page.goto('/legal/');
+    expect(response?.ok()).toBe(true);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Impressum & Datenschutz',
+    );
+    await expect(
+      page.getByRole('heading', { level: 2, name: 'Datenschutz' }),
+    ).toBeVisible();
+    await expect(page.locator('address')).toContainText('Schaeferwall 11');
+    await expect(
+      page.locator('section[aria-labelledby="hosting"]'),
+    ).toContainText(
+      'in der Dokumentation zur Datensammlung bei GitHub Pages und in der Datenschutzerklärung von GitHub',
+    );
+    await expect(page.locator('.obfuscated-email')).toHaveCount(2);
+    await expect(page.locator('a[href^="mailto:"]')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Hinweis' })).toHaveCount(0);
+
+    const emailSymbols = await page
+      .locator('.obfuscated-email')
+      .first()
+      .evaluate((element) => ({
+        at: getComputedStyle(
+          element.querySelector('.obfuscated-email__join')!,
+          '::before',
+        ).content,
+        dot: getComputedStyle(
+          element.querySelector('.obfuscated-email__break')!,
+          '::before',
+        ).content,
+      }));
+    expect(emailSymbols).toEqual({ at: '"@"', dot: '"."' });
+
+    const html = await page.content();
+    expect(html).not.toContain('david@wndff.de');
+
+    const [provider, privacy] = await Promise.all([
+      page.locator('.legal-panel--provider').boundingBox(),
+      page.locator('.legal-panel--privacy').boundingBox(),
+    ]);
+    expect(provider?.x).toBeCloseTo(0, 0);
+    expect(provider?.width).toBeCloseTo(720, 0);
+    expect(privacy?.x).toBeCloseTo(720, 0);
+    expect(privacy?.width).toBeCloseTo(720, 0);
+
+    const results = await new AxeBuilder({ page }).analyze();
+    expect(results.violations).toEqual([]);
+  });
+
+  test('stacks the legal panels on mobile without horizontal overflow', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/legal/');
+
+    const [provider, privacy] = await Promise.all([
+      page.locator('.legal-panel--provider').boundingBox(),
+      page.locator('.legal-panel--privacy').boundingBox(),
+    ]);
+    expect(provider?.x).toBeCloseTo(0, 0);
+    expect(provider?.width).toBeCloseTo(390, 0);
+    expect(privacy?.x).toBeCloseTo(0, 0);
+    expect(privacy?.width).toBeCloseTo(390, 0);
+    expect(privacy?.y).toBeCloseTo(
+      (provider?.y ?? 0) + (provider?.height ?? 0),
+      0,
+    );
+
+    const hasOverflow = await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth >
+        document.documentElement.clientWidth,
+    );
+    expect(hasOverflow).toBe(false);
+  });
+
+  test('includes a styled static 404 page', async ({ page }) => {
+    await page.goto('/404.html');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Diese Seite gibt es nicht.',
+    );
+    await expect(
+      page.getByRole('link', { name: 'Zur Startseite' }),
+    ).toHaveAttribute('href', '/');
+    await expect(page.locator('.not-found-page')).toBeVisible();
+  });
+});
