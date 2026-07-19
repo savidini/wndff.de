@@ -67,33 +67,93 @@ test.describe('landing page', () => {
     expect(animatedElements).toBe(0);
   });
 
-  test('stacks equal mobile sections without horizontal overflow', async ({
+  test('fills mobile viewports with equal sections and no page overflow', async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
+    for (const viewport of [
+      { width: 390, height: 844 },
+      { width: 390, height: 667 },
+      { width: 320, height: 568 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.goto('/');
+
+      const [home, david, eva] = await Promise.all([
+        page.locator('.static-home').boundingBox(),
+        page.locator('#david').boundingBox(),
+        page.locator('#eva').boundingBox(),
+      ]);
+      expect(home).not.toBeNull();
+      expect(david).not.toBeNull();
+      expect(eva).not.toBeNull();
+      expect(home?.height).toBeCloseTo(viewport.height, 0);
+      expect(david?.x).toBeCloseTo(0, 0);
+      expect(eva?.x).toBeCloseTo(0, 0);
+      expect(david?.width).toBeCloseTo(viewport.width, 0);
+      expect(eva?.width).toBeCloseTo(viewport.width, 0);
+      expect(
+        Math.abs((david?.height ?? 0) - (eva?.height ?? 0)),
+      ).toBeLessThanOrEqual(1);
+      expect(eva?.y).toBeCloseTo((david?.y ?? 0) + (david?.height ?? 0), 0);
+      expect((eva?.y ?? 0) + (eva?.height ?? 0)).toBeCloseTo(
+        viewport.height,
+        0,
+      );
+
+      const overflow = await page.evaluate(() => ({
+        horizontal:
+          document.documentElement.scrollWidth > window.innerWidth ||
+          document.body.scrollWidth > window.innerWidth,
+        vertical:
+          document.documentElement.scrollHeight > window.innerHeight ||
+          document.body.scrollHeight > window.innerHeight,
+      }));
+      expect(overflow).toEqual({ horizontal: false, vertical: false });
+
+      for (const profile of ['#david', '#eva']) {
+        const [panel, portrait, content] = await Promise.all([
+          page.locator(profile).boundingBox(),
+          page.locator(`${profile} .portrait`).boundingBox(),
+          page.locator(`${profile} .profile__content`).boundingBox(),
+        ]);
+        expect((portrait?.y ?? 0) >= (panel?.y ?? 0)).toBe(true);
+        expect(
+          (content?.y ?? 0) + (content?.height ?? 0) <=
+            (panel?.y ?? 0) + (panel?.height ?? 0),
+        ).toBe(true);
+      }
+    }
+  });
+
+  test('fills a short mobile landscape viewport without page overflow', async ({
+    page,
+  }) => {
+    const viewport = { width: 844, height: 390 };
+    await page.setViewportSize(viewport);
     await page.goto('/');
 
-    const [david, eva] = await Promise.all([
+    const [home, david, eva] = await Promise.all([
+      page.locator('.static-home').boundingBox(),
       page.locator('#david').boundingBox(),
       page.locator('#eva').boundingBox(),
     ]);
-    expect(david).not.toBeNull();
-    expect(eva).not.toBeNull();
+    expect(home?.height).toBeCloseTo(viewport.height, 0);
     expect(david?.x).toBeCloseTo(0, 0);
-    expect(eva?.x).toBeCloseTo(0, 0);
-    expect(david?.width).toBeCloseTo(390, 0);
-    expect(eva?.width).toBeCloseTo(390, 0);
-    expect(
-      Math.abs((david?.height ?? 0) - (eva?.height ?? 0)),
-    ).toBeLessThanOrEqual(1);
-    expect(eva?.y).toBeCloseTo((david?.y ?? 0) + (david?.height ?? 0), 0);
+    expect(david?.width).toBeCloseTo(viewport.width / 2, 0);
+    expect(david?.height).toBeCloseTo(viewport.height, 0);
+    expect(eva?.x).toBeCloseTo(viewport.width / 2, 0);
+    expect(eva?.width).toBeCloseTo(viewport.width / 2, 0);
+    expect(eva?.height).toBeCloseTo(viewport.height, 0);
 
-    const hasOverflow = await page.evaluate(
-      () =>
-        document.documentElement.scrollWidth >
-        document.documentElement.clientWidth,
-    );
-    expect(hasOverflow).toBe(false);
+    const overflow = await page.evaluate(() => ({
+      horizontal:
+        document.documentElement.scrollWidth > window.innerWidth ||
+        document.body.scrollWidth > window.innerWidth,
+      vertical:
+        document.documentElement.scrollHeight > window.innerHeight ||
+        document.body.scrollHeight > window.innerHeight,
+    }));
+    expect(overflow).toEqual({ horizontal: false, vertical: false });
   });
 
   test('shows circular portraits and all intended secure profile links', async ({
