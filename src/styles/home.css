@@ -402,6 +402,18 @@ body.home-document {
     padding: clamp(2.8rem, 8dvh, 4.1rem) 0.8rem clamp(0.25rem, 1.5dvh, 1rem);
   }
 
+  .legal-link--home-corner {
+    right: 0.5rem;
+    bottom: 0.2rem;
+    display: inline-flex;
+    min-height: 1.5rem;
+    align-items: center;
+    padding-inline: 0.15rem;
+    font-size: 0.625rem;
+    letter-spacing: 0.015em;
+    line-height: 1;
+  }
+
   .static-home .portrait {
     width: clamp(5.5rem, 16dvh, 8.4rem);
     max-width: 38%;
@@ -456,6 +468,18 @@ body.home-document {
         transparent 4.05rem
       ),
       #dfc291;
+  }
+}
+
+@media (max-width: 767px) and (max-height: 700px) and (orientation: portrait) {
+  .static-home .profile--eva .profile__composition {
+    transform: translateY(-1rem);
+  }
+}
+
+@media (max-width: 767px) and (max-height: 600px) and (orientation: portrait) {
+  .static-home .profile--eva .profile__composition {
+    transform: translateY(-1.875rem);
   }
 }
 

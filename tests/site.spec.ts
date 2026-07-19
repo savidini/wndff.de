@@ -110,6 +110,26 @@ test.describe('landing page', () => {
       }));
       expect(overflow).toEqual({ horizontal: false, vertical: false });
 
+      const [evaLinks, legalLink] = await Promise.all([
+        page.locator('#eva .profile__links').boundingBox(),
+        page.locator('.legal-link--home-corner').boundingBox(),
+      ]);
+      expect(
+        (legalLink?.y ?? 0) - ((evaLinks?.y ?? 0) + (evaLinks?.height ?? 0)),
+      ).toBeGreaterThanOrEqual(12);
+
+      const mobileLinkSizes = await page.evaluate(() => ({
+        legal: Number.parseFloat(
+          getComputedStyle(document.querySelector('.legal-link--home-corner')!)
+            .fontSize,
+        ),
+        profile: Number.parseFloat(
+          getComputedStyle(document.querySelector('#eva .profile__link')!)
+            .fontSize,
+        ),
+      }));
+      expect(mobileLinkSizes.legal).toBeLessThan(mobileLinkSizes.profile);
+
       for (const profile of ['#david', '#eva']) {
         const [panel, portrait, content] = await Promise.all([
           page.locator(profile).boundingBox(),
