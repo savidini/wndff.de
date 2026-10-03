@@ -76,7 +76,9 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-  padding: clamp(1.15rem, 2.5vw, 2rem) clamp(1.15rem, 3.4vw, 3.2rem);
+  padding: max(clamp(1.15rem, 2.5vw, 2rem), env(safe-area-inset-top))
+    max(clamp(1.15rem, 3.4vw, 3.2rem), env(safe-area-inset-right)) 0
+    max(clamp(1.15rem, 3.4vw, 3.2rem), env(safe-area-inset-left));
   color: #352018;
   pointer-events: none;
 }
@@ -86,17 +88,17 @@ a {
 }
 
 .wordmark {
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.75rem;
-  font-weight: 400;
-  letter-spacing: 0.06em;
+  font-family: 'Manrope Variable', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 760;
+  letter-spacing: 0.14em;
   line-height: 1;
   text-decoration: none;
   text-transform: lowercase;
 }
 
 .wordmark span {
-  color: #4ff2c8;
+  color: #5ee3d2;
 }
 
 .legal-link {

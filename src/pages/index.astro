@@ -30,13 +30,9 @@ const structuredData = {
   <SiteHeader home />
   <main class="split static-home">
     <h1 class="visually-hidden">wndff.de — David and Eva Wendorff</h1>
+    {profiles.map((profile) => <ProfilePanel profile={profile} />)}
     <a class="legal-link legal-link--home-corner" href="/legal/">
       Impressum &amp; Datenschutz
     </a>
-    {
-      profiles.map((profile, index) => (
-        <ProfilePanel profile={profile} position={index} />
-      ))
-    }
   </main>
 </BaseLayout>

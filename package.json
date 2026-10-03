@@ -27,7 +27,6 @@
   "dependencies": {
     "@fontsource-variable/fraunces": "5.2.9",
     "@fontsource-variable/manrope": "5.2.8",
-    "@fontsource/press-start-2p": "5.2.7",
     "astro": "7.1.1",
     "sharp": "0.35.3"
   },

@@ -6,10 +6,9 @@ import { portraitSrcset } from '../data/profiles';
 
 type Props = {
   profile: Profile;
-  position: number;
 };
 
-const { profile, position } = Astro.props;
+const { profile } = Astro.props;
 const sourceAt = (template: string, width: number) =>
   template.replace('{width}', String(width));
 const hasPortrait = existsSync(
@@ -21,14 +20,14 @@ const initials = profile.name
   .join('');
 const panelStyle = [
   `--panel-bg:${profile.theme.background}`,
-  `--panel-bg-deep:${profile.theme.backgroundDeep}`,
   `--panel-fg:${profile.theme.foreground}`,
   `--panel-muted:${profile.theme.muted}`,
   `--panel-accent:${profile.theme.accent}`,
-  `--panel-accent-soft:${profile.theme.accentSoft}`,
   `--focal-x:${profile.portrait.focalPoint.x}`,
   `--focal-y:${profile.portrait.focalPoint.y}`,
 ].join(';');
+const portraitSizes =
+  '(max-height: 620px) and (orientation: landscape) min(22dvh, 7rem), (min-width: 768px) min(28dvh, 18rem), 8.5rem';
 ---
 
 <section
@@ -36,7 +35,7 @@ const panelStyle = [
   class:list={['profile', `profile--${profile.id}`]}
   style={panelStyle}
   data-profile={profile.id}
-  data-position={position}
+  aria-labelledby={`${profile.id}-name`}
 >
   <div class="profile__composition">
     <div
@@ -50,17 +49,17 @@ const panelStyle = [
               <source
                 type="image/avif"
                 srcset={portraitSrcset(profile.portrait.sources.avif)}
-                sizes="(min-width: 768px) 19rem, 10rem"
+                sizes={portraitSizes}
               />
               <source
                 type="image/webp"
                 srcset={portraitSrcset(profile.portrait.sources.webp)}
-                sizes="(min-width: 768px) 19rem, 10rem"
+                sizes={portraitSizes}
               />
               <img
                 src={sourceAt(profile.portrait.sources.jpeg, 960)}
                 srcset={portraitSrcset(profile.portrait.sources.jpeg)}
-                sizes="(min-width: 768px) 19rem, 10rem"
+                sizes={portraitSizes}
                 width="960"
                 height="960"
                 alt={profile.portrait.alt}
@@ -79,20 +78,18 @@ const panelStyle = [
     </div>
 
     <div class="profile__content">
-      <h2>{profile.name}</h2>
-      <p class="profile__field">{profile.field}</p>
+      <h2 id={`${profile.id}-name`}>{profile.name}</h2>
+      <p class="profile__field" lang="en">{profile.field}</p>
       <nav class="profile__links" aria-label={`${profile.name} links`}>
         {
           profile.links.map((link) => (
             <a
               class="profile__link"
-              data-icon={link.icon}
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`${link.label} — ${profile.name} (opens in a new tab)`}
             >
-              <span class="profile__link-pixel" aria-hidden="true" />
               <span>{link.label}</span>
               <svg viewBox="0 0 16 16" aria-hidden="true">
                 <path d="M4 12L12 4M6 4h6v6" />

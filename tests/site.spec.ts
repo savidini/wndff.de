@@ -74,6 +74,7 @@ test.describe('landing page', () => {
       { width: 390, height: 844 },
       { width: 390, height: 667 },
       { width: 320, height: 568 },
+      { width: 430, height: 932 },
     ]) {
       await page.setViewportSize(viewport);
       await page.goto('/');
@@ -129,6 +130,12 @@ test.describe('landing page', () => {
         ),
       }));
       expect(mobileLinkSizes.legal).toBeLessThan(mobileLinkSizes.profile);
+
+      for (const link of await page.getByRole('link').all()) {
+        const box = await link.boundingBox();
+        expect(box?.height).toBeGreaterThanOrEqual(44);
+        expect(box?.width).toBeGreaterThanOrEqual(44);
+      }
 
       for (const profile of ['#david', '#eva']) {
         const [panel, portrait, content] = await Promise.all([
@@ -198,6 +205,12 @@ test.describe('landing page', () => {
       const portraitImage = portrait.locator('img');
       await expect(portraitImage).toHaveAttribute('loading', 'eager');
       await expect(portraitImage).toHaveAttribute('fetchpriority', 'high');
+      await expect(portraitImage).toHaveJSProperty('complete', true);
+      expect(
+        await portraitImage.evaluate(
+          (image: HTMLImageElement) => image.naturalWidth,
+        ),
+      ).toBeGreaterThan(0);
 
       for (const expectedLink of profile.links) {
         const link = panel.getByRole('link', {
@@ -221,23 +234,37 @@ test.describe('landing page', () => {
 
     await expect(page.locator('h1')).toHaveCount(1);
     await expect(page.locator('h2')).toHaveCount(2);
-    await page.keyboard.press('Tab');
-    await expect(
-      page.getByRole('link', { name: 'Impressum & Datenschutz' }),
-    ).toBeFocused();
-
-    const focusStyle = await page
-      .getByRole('link', { name: 'Impressum & Datenschutz' })
-      .evaluate((element) => {
+    const orderedLinks = [
+      page.getByRole('link', {
+        name: 'LinkedIn — David Wendorff (opens in a new tab)',
+        exact: true,
+      }),
+      page.getByRole('link', {
+        name: 'GitHub — David Wendorff (opens in a new tab)',
+        exact: true,
+      }),
+      page.getByRole('link', {
+        name: 'LinkedIn — Eva Wendorff (opens in a new tab)',
+        exact: true,
+      }),
+      page.getByRole('link', { name: 'Impressum & Datenschutz', exact: true }),
+    ] as const;
+    for (const link of orderedLinks) {
+      await page.keyboard.press('Tab');
+      await expect(link).toBeFocused();
+      const focusStyle = await link.evaluate((element) => {
         const style = getComputedStyle(element);
         return {
           style: style.outlineStyle,
           width: Number.parseFloat(style.outlineWidth),
         };
       });
-    expect(focusStyle.style).toBe('solid');
-    expect(focusStyle.width).toBeGreaterThanOrEqual(2);
+      expect(focusStyle.style).toBe('solid');
+      expect(focusStyle.width).toBeGreaterThanOrEqual(2);
+    }
 
+    // Include the warm panel's accent text in the accessibility audit.
+    await orderedLinks[2].focus();
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations).toEqual([]);
   });
@@ -251,13 +278,66 @@ test.describe('landing page', () => {
     const movingElements = await page.locator('.profile *').evaluateAll(
       (elements) =>
         elements.filter((element) => {
-          const style = getComputedStyle(element);
-          return (
-            style.animationName !== 'none' || style.transitionDuration !== '0s'
-          );
+          return [null, '::before', '::after'].some((pseudo) => {
+            const style = getComputedStyle(element, pseudo);
+            return (
+              style.animationName !== 'none' ||
+              style.transitionDuration !== '0s'
+            );
+          });
         }).length,
     );
     expect(movingElements).toBe(0);
+  });
+
+  test('keeps enlarged text and links reachable on a narrow screen', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto('/');
+    await page.addStyleTag({ content: 'html { font-size: 200%; }' });
+    const dimensions = await page.evaluate(() => ({
+      width: document.documentElement.scrollWidth,
+      height: document.documentElement.scrollHeight,
+    }));
+    expect(dimensions.width).toBe(320);
+    expect(dimensions.height).toBeGreaterThan(568);
+
+    for (const profile of ['#david', '#eva']) {
+      const panel = (await page.locator(profile).boundingBox())!;
+      for (const selector of [
+        '.portrait',
+        'h2',
+        '.profile__field',
+        '.profile__links',
+      ]) {
+        const content = (await page
+          .locator(`${profile} ${selector}`)
+          .boundingBox())!;
+        expect(content.x).toBeGreaterThanOrEqual(panel.x);
+        expect(content.x + content.width).toBeLessThanOrEqual(
+          panel.x + panel.width,
+        );
+        expect(content.y).toBeGreaterThanOrEqual(panel.y);
+        expect(content.y + content.height).toBeLessThanOrEqual(
+          panel.y + panel.height,
+        );
+      }
+    }
+    for (const link of await page.getByRole('link').all()) {
+      await link.focus();
+      await expect(link).toBeInViewport();
+      const bounds = (await link.boundingBox())!;
+      expect(bounds.x).toBeGreaterThanOrEqual(0);
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(320);
+    }
+    const evaLinks = (await page
+      .locator('#eva .profile__links')
+      .boundingBox())!;
+    const legalLink = (await page
+      .locator('.legal-link--home-corner')
+      .boundingBox())!;
+    expect(legalLink.y).toBeGreaterThan(evaLinks.y + evaLinks.height);
   });
 
   test('makes no third-party request during initial load', async ({ page }) => {
@@ -271,6 +351,9 @@ test.describe('landing page', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     expect([...externalHosts]).toEqual([]);
+    await expect(
+      page.locator('script:not([type="application/ld+json"])'),
+    ).toHaveCount(0);
   });
 });
 
